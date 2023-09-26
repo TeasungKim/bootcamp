@@ -34,7 +34,7 @@ public class TodoDAO {
 		List<TodoVO> todovo = new ArrayList<>();
 		try {
 		con = dataFactory.getConnection();
-		String query = "select * from freeboard";
+		String query = "select * from todolist";
 		pstmt = con.prepareStatement(query);
 		ResultSet rs = pstmt.executeQuery();
 		while(rs.next()) {

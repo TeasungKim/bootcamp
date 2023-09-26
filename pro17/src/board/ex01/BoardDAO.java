@@ -7,12 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
-import member.ex01.MemberBean;
+//import member.ex01.MemberBean;
 
 public class BoardDAO {
 
@@ -30,12 +31,20 @@ public class BoardDAO {
 		}
 	}
 	
-	public List<ArticleVO> selectAllArticles() {
+	public List<ArticleVO> selectAllArticles(Map<String, Integer> pagingMap) {
 		List<ArticleVO> articlesList = new ArrayList<>();
+		int section =  pagingMap.get("section");
+		int pageNum =  pagingMap.get("pageNum");
+		
 		try {
+			
 			con = dataFactory.getConnection();
-			String query = "select * from freeboard";
+			String query = "select B.* from(select @rownum:=@rownum+1 rn, A.* from freeboard A, (select @rownum:=0) R)B where rn between (?-1)*100+(?-1)*10+1 and (?-1)*100+?*10 ";
 			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, section);
+			pstmt.setInt(2, pageNum);
+			pstmt.setInt(3, section);
+			pstmt.setInt(4, pageNum);
 			ResultSet rs = pstmt.executeQuery();
 			while( rs.next() ) {
 				  int articleNO = rs.getInt("articleNO");
@@ -218,6 +227,24 @@ public class BoardDAO {
 			e.printStackTrace();
 		}
 		return articleNOList;
+	}
+	
+	public int selectTotArticles() {
+		try {
+			con = dataFactory.getConnection();
+			String query = "select count(articleNO) from freeboard ";
+			System.out.println(query);
+			pstmt = con.prepareStatement(query);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next())
+				return (rs.getInt(1));
+			rs.close();
+			pstmt.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 	
 }

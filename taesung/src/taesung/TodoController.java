@@ -39,11 +39,18 @@ public class TodoController extends HttpServlet {
 		String action = request.getPathInfo();
 		TodoService todoService = new TodoService();
 		try {
+			List<TodoVO> list = todoService.listArticles();
+			request.setAttribute("todovo", list);
+			nextPage = "todoindex.jsp";
 			if(action==null||action.equals("/listArticles.do")) {
-				List<TodoVO> list = todoService.listArticles();
-				request.setAttribute("articles", list);
-				nextPage = "/second.jsp";				
-	} 
+				List<TodoVO> list1 = todoService.listArticles();
+				request.setAttribute("todovo", list1);
+				nextPage = "todoindex.jsp";
+							
+	} else if (action.equals("/addArticles.do")) {
+			
+		
+	}
 			RequestDispatcher dispatch = request.getRequestDispatcher(nextPage);
 			dispatch.forward(request, response);
 		} catch(Exception e) {

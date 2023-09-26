@@ -51,11 +51,32 @@ public class BoardController extends HttpServlet {
 		HttpSession session;
 		String action = request.getPathInfo();
 		try {
-			if (action==null || action.equals("/listArticles.do")) {
-				List<ArticleVO> list = boardService.listArticles();
-				request.setAttribute("articles", list);
+			if (action==null) {
+				String _section = request.getParameter("section");
+				String _pageNum = request.getParameter("pageNum");
+				int section = Integer.parseInt(((_section==null)? "1":_section));
+				int pageNum = Integer.parseInt(((_pageNum==null)? "1":_pageNum));
+				Map<String, Integer> pagingMap = new HashMap<>();
+				pagingMap.put("section", section);
+				pagingMap.put("pageNum", pageNum);
+				boardService.listArticles(pagingMap);
+				
+			} else if (action.equals("/listArticles.do")) {
+				String _section=request.getParameter("section");
+				String _pageNum=request.getParameter("pageNum");
+				int section = Integer.parseInt(((_section==null)? "1":_section));
+				int pageNum = Integer.parseInt(((_pageNum==null)? "1":_pageNum));
+				Map pagingMap=new HashMap();
+				pagingMap.put("section", section);
+				pagingMap.put("pageNum", pageNum);
+				Map articlesMap = boardService.listArticles(pagingMap);
+				articlesMap.put("section", section);
+				articlesMap.put("pageNum", pageNum);
+				request.setAttribute("articlesMap", articlesMap);
 				nextPage = "/boardpage/listArticles.jsp";
-			} else if (action.equals("/addArticle.do")) {
+			}
+				else if (action.equals("/addArticle.do")) {
+			
 				int articleNO = 0;
 				Map<String, String> articleMap = upload(request, response);
 				String id = articleMap.get("id");
@@ -134,7 +155,7 @@ public class BoardController extends HttpServlet {
 				nextPage = "/boardpage/replyForm.jsp";
 			} 
 			
-			RequestDispatcher dispatch = request.getRequestDispatcher(nextPage);
+			RequestDispatcher dispatch = request.getRequestDispatcher("todoIndex.jsp");
 			dispatch.forward(request, response);
 		} catch(Exception e) {
 			e.printStackTrace();

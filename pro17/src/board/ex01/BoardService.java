@@ -9,37 +9,29 @@ public class BoardService {
 	public BoardService() {
 		boardDAO = new BoardDAO();
 	}
-	public Map listArticles(Map<String, Integer> pagingMap) {
+	public Map listArticles(int pageNum, int amount) {
 		Map articlesMap = new HashMap();
-		List<ArticleVO> articlesList = boardDAO.selectAllArticles(pagingMap);
+		List<ArticleVO> articlesList = boardDAO.selectAllArticles(pageNum, amount);
 		int totArticles = boardDAO.selectTotArticles();
+		PageVO pageVO = new PageVO(pageNum, amount, totArticles);
 		articlesMap.put("articlesList", articlesList);
-		articlesMap.put("totArticles", totArticles);
-		//articlesMap.put("totArticles", 170);
+		articlesMap.put("pageVO", pageVO);
 		return articlesMap;
 	}
 	public int addArticle(ArticleVO article) {
 		return boardDAO.insertNewArticle(article);
 	}
-	
 	public ArticleVO viewArticle(int articleNO) {
-		ArticleVO article = null;
-		article = boardDAO.selectArticle(articleNO);
-		return article;
+		return boardDAO.selectArticle(articleNO);
 	}
-	
 	public void modArticle(ArticleVO article) {
 		boardDAO.updateArticle(article);
 	}
-	
-	public List<Integer> removeArticle(int articleNO) {
-		List<Integer> articleNOList = boardDAO.selectRemovedArticles(articleNO);
-		boardDAO.deleteArticle(articleNO);
-		return articleNOList;
+	public void removeArticle(int articleNO) {
+		boardDAO.selectRemovedArticles(articleNO);
 	}
 	
 	public int addReply(ArticleVO article) {
 		return boardDAO.insertNewArticle(article);
 	}
-	
 }

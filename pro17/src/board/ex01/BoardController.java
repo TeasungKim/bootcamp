@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
 public class BoardController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
-	private static String ARTICLE_IMAGE_REPO = "C:\\Board\\article_image";
+	private static String ARTICLE_IMAGE_REPO = "C:\\board\\article_image";
 	BoardService boardService;
 	ArticleVO articleVO;
 	
@@ -48,35 +48,22 @@ public class BoardController extends HttpServlet {
 		String nextPage = "";
 		request.setCharacterEncoding("utf-8");
 		response.setContentType("text/html; charset=utf-8");
+		
 		HttpSession session;
 		String action = request.getPathInfo();
 		try {
-			if (action==null) {
-				String _section = request.getParameter("section");
-				String _pageNum = request.getParameter("pageNum");
-				int section = Integer.parseInt(((_section==null)? "1":_section));
-				int pageNum = Integer.parseInt(((_pageNum==null)? "1":_pageNum));
-				Map<String, Integer> pagingMap = new HashMap<>();
-				pagingMap.put("section", section);
-				pagingMap.put("pageNum", pageNum);
-				boardService.listArticles(pagingMap);
-				
-			} else if (action.equals("/listArticles.do")) {
-				String _section=request.getParameter("section");
-				String _pageNum=request.getParameter("pageNum");
-				int section = Integer.parseInt(((_section==null)? "1":_section));
-				int pageNum = Integer.parseInt(((_pageNum==null)? "1":_pageNum));
-				Map pagingMap=new HashMap();
-				pagingMap.put("section", section);
-				pagingMap.put("pageNum", pageNum);
-				Map articlesMap = boardService.listArticles(pagingMap);
-				articlesMap.put("section", section);
-				articlesMap.put("pageNum", pageNum);
+			if (action==null || action.equals("/listArticles.do")) {
+				int pageNum = 1;
+				int amount = 10;
+				// 페이지번호를 클릭하는 경우
+				if(request.getParameter("pageNum") != null && request.getParameter("amount") != null) {
+					pageNum = Integer.parseInt(request.getParameter("pageNum"));
+					amount = Integer.parseInt(request.getParameter("amount"));
+				}
+				Map articlesMap = boardService.listArticles(pageNum, amount);
 				request.setAttribute("articlesMap", articlesMap);
 				nextPage = "/boardpage/listArticles.jsp";
-			}
-				else if (action.equals("/addArticle.do")) {
-			
+			} else if (action.equals("/addArticle.do")) {
 				int articleNO = 0;
 				Map<String, String> articleMap = upload(request, response);
 				String id = articleMap.get("id");
@@ -101,7 +88,7 @@ public class BoardController extends HttpServlet {
 				pw.print("<script>" + " location.href='" + request.getContextPath()
 				+ "/board/listArticles.do';" + "</script>");
 				return;
-			}  else if (action.equals("/viewArticle.do")) {
+			} else if (action.equals("/viewArticle.do")) {
 				String articleNO = request.getParameter("articleNO");
 				articleVO = boardService.viewArticle(Integer.parseInt(articleNO));
 				request.setAttribute("article", articleVO);
@@ -109,13 +96,10 @@ public class BoardController extends HttpServlet {
 			} else if (action.equals("/modArticle.do")) {
 				Map<String, String> articleMap = upload(request, response);
 				int articleNO = Integer.parseInt(articleMap.get("articleNO"));
-				String id = articleMap.get("id");
 				String title = articleMap.get("title");
 				String content = articleMap.get("content");
 				String imageFileName = articleMap.get("imageFileName");
 				articleVO.setArticleNO(articleNO);
-				articleVO.setParentNO(0);
-				articleVO.setId(id);
 				articleVO.setTitle(title);
 				articleVO.setContent(content);
 				articleVO.setImageFileName(imageFileName);
@@ -136,26 +120,52 @@ public class BoardController extends HttpServlet {
 				return;
 			} else if (action.equals("/removeArticle.do")) {
 				int articleNO = Integer.parseInt(request.getParameter("articleNO"));
-				List<Integer> articleNOList = boardService.removeArticle(articleNO);
-				for (int _articleNO : articleNOList) {
-					File imgDir = new File(ARTICLE_IMAGE_REPO + "\\" + _articleNO);
-					if (imgDir.exists()) {
-						FileUtils.deleteDirectory(imgDir);
-					}
+				boardService.removeArticle(articleNO);
+				File imgDir = new File(ARTICLE_IMAGE_REPO + "\\" + articleNO);
+				if (imgDir.exists()) {
+					FileUtils.deleteDirectory(imgDir);
 				}
-
 				PrintWriter pw = response.getWriter();
 				pw.print("<script>" + " location.href='" + request.getContextPath()
 						+ "/board/listArticles.do';" + "</script>");
 				return;
-			} else if (action.equals("/replyForm.do")) {
+			} else if(action.equals("/replyForm.do")) {
 				int parentNO = Integer.parseInt(request.getParameter("parentNO"));
 				session = request.getSession();
-				session.setAttribute("parentNO", parentNO);
+				session.setAttribute("parentNO",parentNO);
 				nextPage = "/boardpage/replyForm.jsp";
-			} 
+				
+			} else if (action.equals("/addReply.do")) {
+				session = request.getSession();
+				int parentNO = (Integer) session.getAttribute("parentNO");
+				if (parentNO!=0) {
+					articleVO.setGroupNO(parentNO);
+				}
+				session.removeAttribute("parentNO");
+				Map<String, String> articleMap = upload(request, response);
+				String title = articleMap.get("title");
+				String content = articleMap.get("content");
+				String imageFileName = articleMap.get("imageFileName");
+				articleVO.setParentNO(parentNO);
+				articleVO.setId("admin");
+				articleVO.setTitle(title);
+				articleVO.setContent(content);
+				articleVO.setImageFileName(imageFileName);
+				int articleNO = boardService.addReply(articleVO);
+				if (imageFileName != null && imageFileName.length() != 0) {
+					File srcFile = new File(ARTICLE_IMAGE_REPO + "\\" + "temp" + "\\" + imageFileName);
+					File destDir = new File(ARTICLE_IMAGE_REPO + "\\" + articleNO);
+					destDir.mkdirs();
+					FileUtils.moveFileToDirectory(srcFile, destDir, true);
+				}
+				PrintWriter pw = response.getWriter();
+				pw.print("<script>" + " location.href='" + request.getContextPath()
+						+ "/board/viewArticle.do?articleNO="+articleNO+"';" + "</script>");
+				return;
 			
-			RequestDispatcher dispatch = request.getRequestDispatcher("todoIndex.jsp");
+			}
+			
+			RequestDispatcher dispatch = request.getRequestDispatcher(nextPage);
 			dispatch.forward(request, response);
 		} catch(Exception e) {
 			e.printStackTrace();

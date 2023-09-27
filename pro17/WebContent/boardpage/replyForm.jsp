@@ -31,7 +31,7 @@
 </head>
 <body>
  <h1 style="text-align:center">답글쓰기</h1>
-  <form name="frmReply" method="post"  action="${contextPath}/board/addReply.do"   enctype="multipart/form-data">
+  <form name="frmReply" method="post"  action="${contextPath}/board/addReply.do" enctype="multipart/form-data">
     <table align="center">
     <tr>
 			<td align="right"> 글쓴이:&nbsp; </td>
@@ -53,8 +53,8 @@
 		<tr>
 			<td align="right"> </td>
 			<td>
-				<input type=submit value="답글반영하기" />
-				<input type=button value="취소"onClick="backToList(this.form)" />
+				<input type="submit" value="답글반영하기" />
+				<input type="button" value="취소" onClick="backToList(this.form)" />
 				
 			</td>
 		</tr>

@@ -3,10 +3,12 @@
     isELIgnored="false" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>    
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%
   request.setCharacterEncoding("UTF-8");
 %> 
 <c:set var="contextPath"  value="${pageContext.request.contextPath}"  />
+<c:set var="userId" value="${sessionScope.userid}" />   
 <head>
    <meta charset="UTF-8">
    <title>글보기</title>
@@ -73,6 +75,21 @@
 	         }
 	         reader.readAsDataURL(input.files[0]);
 	     }
+	     
+	     function fn_reply_form(url, parentNO){
+			 var form = document.createElement("form");
+			 form.setAttribute("method", "post");
+			 form.setAttribute("action", url);
+		     var parentNOInput = document.createElement("input");
+		     parentNOInput.setAttribute("type","hidden");
+		     parentNOInput.setAttribute("name","parentNO");
+		     parentNOInput.setAttribute("value", parentNO);
+			 
+		     form.appendChild(parentNOInput);
+		     document.body.appendChild(form);
+			 form.submit();
+	  }
+	     
 	 }  
  </script>
 </head>
@@ -150,7 +167,9 @@
 	    <input type=button value="수정하기" onClick="fn_enable(this.form)">
 	    <input type=button value="삭제하기" onClick="fn_remove_article('${contextPath}/board/removeArticle.do', ${article.articleNO})">
 	    <input type=button value="리스트로 돌아가기"  onClick="backToList(this.form)">
+	    <c:if test="${userId=='admin'}">
 	     <input type=button value="답글쓰기"  onClick="fn_reply_form('${contextPath}/board/replyForm.do', ${article.articleNO})">
+		</c:if>   
    </td>
   </tr>
  </table>

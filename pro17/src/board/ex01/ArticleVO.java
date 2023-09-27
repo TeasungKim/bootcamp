@@ -3,6 +3,7 @@ package board.ex01;
 import java.sql.Date;
 
 public class ArticleVO {
+	private int recNO;
 	private int articleNO;
 	private int parentNO;
 	private String title;
@@ -10,9 +11,11 @@ public class ArticleVO {
 	private String imageFileName;
 	private String id;
 	private Date writeDate;
+	private int groupNO;
+	
 	
 	public ArticleVO() {}
-	public ArticleVO(int articleNO, int parentNO, String title, String content, String imageFileName, String id,
+	public ArticleVO(int articleNO, int parentNO,  int groupNO, String title, String content, String imageFileName, String id,
 			Date writeDate) {
 		super();
 		this.articleNO = articleNO;
@@ -22,7 +25,16 @@ public class ArticleVO {
 		this.imageFileName = imageFileName;
 		this.id = id;
 		this.writeDate = writeDate;
+		this.groupNO = groupNO;
 	}
+	
+	public int getRecNO() {
+		return recNO;
+	}
+	public void setRecNO(int recNO) {
+		this.recNO = recNO;
+	}
+	
 	public int getArticleNO() {
 		return articleNO;
 	}
@@ -65,6 +77,11 @@ public class ArticleVO {
 	public void setWriteDate(Date writeDate) {
 		this.writeDate = writeDate;
 	}
-	
+	public int getGroupNO() {
+		return groupNO;
+	}
+	public void setGroupNO(int groupNO) {
+		this.groupNO = groupNO;
+	}
 	
 }
